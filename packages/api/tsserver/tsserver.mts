@@ -37,10 +37,19 @@ export class TsServer extends EventEmitter {
   private readonly process: ChildProcess;
   private readonly resolvers: Record<number, (value: any) => void> = {};
 
+  private readonly newLineRegex: RegExp = new RegExp(/\r\n$/);
+  private readonly contentLengthRegex: RegExp = new RegExp(/\nContent-Length:/g);
+
   constructor(process: ChildProcess) {
     super();
     this.process = process;
     this.process.stdout?.on('data', (chunk) => {
+      const messageString = chunk.toString()
+        .replace(this.newLineRegex, "\r")
+        .replace(this.contentLengthRegex, "Content-Length:");
+      
+      chunk = Buffer.from(messageString);
+
       const { messages, buffered } = parse(chunk, this.buffered);
       this.buffered = buffered;
       for (const message of messages) {
