@@ -44,8 +44,10 @@ export class TsServers {
     // created, the dependencies are not installed and thus this will
     // shut down immediately. Make sure that we handle this case after
     // package.json has finished installing its deps.
+    // Spawning a child process fails in Windows without shell: truse
     const child = spawn('npx', ['tsserver'], {
       cwd: options.cwd,
+      shell: true,
     });
 
     const server = new TsServer(child);
